@@ -1,0 +1,54 @@
+ * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; color: #333; }
+    .dashboard-layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 260px; background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; position: fixed; height: 100vh; overflow-y: auto; }
+    .sidebar-header { font-size: 24px; margin-bottom: 10px; padding-bottom: 15px; border-bottom: 2px solid rgba(255, 255, 255, 0.2); }
+    .sidebar-email { font-size: 12px; opacity: 0.8; margin-bottom: 30px; word-break: break-all; }
+    .sidebar-nav ul { list-style: none; }
+    .sidebar-nav li { margin-bottom: 10px; }
+    .sidebar-nav a { display: flex; align-items: center; padding: 12px 15px; color: white; text-decoration: none; border-radius: 8px; transition: all 0.3s; }
+    .sidebar-nav a:hover { background: rgba(255, 255, 255, 0.1); }
+    .sidebar-nav li.active a { background: rgba(255, 255, 255, 0.2); }
+    .sidebar-nav .icon { margin-right: 10px; font-size: 20px; }
+    .main-content { margin-left: 260px; flex: 1; padding: 30px; }
+    h1 { font-size: 32px; margin-bottom: 30px; color: #1e3c72; }
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); text-align: center; }
+    .stat-box h3 { font-size: 13px; color: #777; margin-bottom: 8px; }
+    .stat-box .number { font-size: 28px; font-weight: 700; color: #2a5298; }
+    .booking-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
+    .booking-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .booking-header h2 { font-size: 20px; color: #2a5298; margin: 0; }
+    .header-actions { display: flex; gap: 10px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s; display: inline-flex; align-items: center; gap: 5px; }
+    .btn-primary { background: #2a5298; color: white; }
+    .btn-primary:hover { background: #1e3c72; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-success:hover { background: #218838; }
+    .btn-warning { background: #ffc107; color: #333; padding: 6px 12px; font-size: 12px; }
+    .btn-danger { background: #dc3545; color: white; padding: 6px 12px; font-size: 12px; }
+    .btn-info { background: #17a2b8; color: white; padding: 6px 12px; font-size: 12px; }
+    .search-filter { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+    .search-box { flex: 1; min-width: 250px; }
+    .search-box input, .filter-box select, .filter-box input { width: 100%; padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    .styled-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .styled-table thead tr { background: #2a5298; color: white; text-align: left; }
+    .styled-table th, .styled-table td { padding: 12px 15px; border-bottom: 1px solid #ddd; }
+    .styled-table tbody tr:hover { background: #f8f9fa; }
+    .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d4edda; color: #155724; }
+    .status-completed { background: #d1ecf1; color: #0c5460; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; padding: 30px; border-radius: 12px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h2 { font-size: 20px; color: #2a5298; }
+    .close-modal { font-size: 28px; cursor: pointer; color: #777; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 14px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-cancel { background: #e0e0e0; color: #333; flex: 1; }

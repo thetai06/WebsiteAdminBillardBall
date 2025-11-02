@@ -1,0 +1,170 @@
+
+.crud-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+/*
+ * --- BỔ SUNG CHO FORM ---
+ * Style riêng cho textarea mô tả voucher.
+ */
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/*
+ * --- BỔ SUNG & TINH CHỈNH BẢNG ---
+ */
+
+/* Wrapper để bảng có thể cuộn ngang trên mobile */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+/* Tinh chỉnh bảng để hiển thị đẹp hơn */
+.styled-table th {
+  white-space: nowrap; /* Giữ tiêu đề bảng trên 1 dòng */
+}
+
+.styled-table td {
+  vertical-align: middle; /* Căn giữa nội dung trong ô */
+}
+
+/*
+ * Tinh chỉnh ô 'Hành động'
+ * 'quan-ly-clb.css' chỉ có 'white-space: nowrap'.
+ * Thêm 'display: flex' để các nút Sửa/Xoá
+ * căn chỉnh đẹp hơn.
+ */
+.actions-cell {
+  white-space: nowrap;
+  display: flex;
+  gap: 5px;
+}
+
+/*
+ * --- COMPONENT MỚI: STATUS BADGE ---
+ * Component này dành riêng cho trang voucher
+ * (hoặc các trang có trạng thái).
+ */
+.status-badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.status-active {
+  background-color: #d4edda; /* Màu xanh lá nhạt từ 'quan-lu-don-dat-ban.css' */
+  color: #155724; /* Màu xanh lá đậm */
+}
+
+.status-inactive {
+  background-color: #f8f9fa; /* Xám nhạt */
+  color: #6c757d; /* Xám đậm */
+}
+
+.status-expired {
+  background-color: #f8d7da; /* Màu đỏ nhạt từ 'quan-lu-don-dat-ban.css' */
+  color: #721c24; /* Màu đỏ đậm */
+}
+
+/*
+ * --- RESPONSIVE ---
+ */
+
+@media (max-width: 1200px) {
+  /*
+   * Quy tắc .crud-container { grid-template-columns: 1fr; }
+   * đã được định nghĩa ở file CSS chung.
+   * Không cần định nghĩa lại ở đây.
+   */
+}
+
+@media (max-width: 768px) {
+  /*
+   * 'quan-ly-clb.css' có quy tắc đổi .crud-form thành 1 cột.
+   * File này đã mặc định là 1 cột nên không cần ghi đè.
+   *
+   * Chúng ta có thể thêm các tinh chỉnh padding
+   * để tiết kiệm không gian trên mobile.
+   */
+  .crud-form-container,
+  .crud-table-container {
+    padding: 15px;
+  }
+
+  .styled-table th,
+  .styled-table td {
+    padding: 10px 8px;
+  }
+}
+
+.header-with-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px; 
+}
+
+.header-with-actions h2 {
+    margin: 0; 
+    flex-shrink: 0;
+    padding-right: 10px;
+}
+
+.crud-table-container .header-with-actions h2 {
+    display: inline-block !important; 
+    margin: 0; 
+    padding-right: 10px;
+    flex-shrink: 0;
+}
+
+.btn-export {
+    background-color: #28a745; 
+    color: white;
+    border: none;
+    padding: 10px 15px; 
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.btn-export:hover {
+    background-color: #1e7e34;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-export .material-symbols-outlined {
+    font-size: 20px;
+    color: white;
+    font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+
+.filter-controls {
+    display: block; 
+    margin-bottom: 20px;
+}
+
+.filter-controls .filter-store-group label {
+    display: block;
+    margin-bottom: 5px;
+}

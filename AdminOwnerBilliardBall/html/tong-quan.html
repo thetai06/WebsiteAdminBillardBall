@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tổng quan - Admin Bida</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+    <link rel="stylesheet" href="../css/tong-quan.css">
+  </head>
+  <body>
+    <div class="dashboard-layout">
+      <aside class="sidebar">
+        <h2 class="sidebar-header">Admin Bida</h2>
+        <div id="admin-email" class="sidebar-email">Đang tải...</div>
+        <nav class="sidebar-nav">
+          <ul>
+            <li class="active">
+              <a href="tong-quan.html">
+                <span class="icon material-symbols-outlined">dashboard</span>
+                Tổng quan
+              </a>
+            </li>
+            <li>
+              <a href="quan-ly-clb.html">
+                <span class="icon material-symbols-outlined">sports_bar</span>
+                Quản lý CLB
+              </a>
+            </li>
+            <li>
+              <a href="nguoi-dung.html">
+                <span class="icon material-symbols-outlined">group</span>
+                Người dùng
+              </a>
+            </li>
+            <li>
+              <a href="don-dat-ban.html">
+                <span class="icon material-symbols-outlined">calendar_month</span>
+                Đơn đặt bàn
+              </a>
+            </li>
+            <li>
+              <a href="quan-ly-voucher.html">
+                <span class="icon material-symbols-outlined">
+                  confirmation_number 
+                </span>
+                Quản lý Voucher
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <h1>Tổng quan</h1>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <span class="material-symbols-outlined">sports_bar</span>
+            </div>
+            <div class="stat-info">
+              <h3>Tổng số CLB</h3>
+              <div class="stat-number" id="total-clubs">0</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <span class="material-symbols-outlined">group</span>
+            </div>
+            <div class="stat-info">
+              <h3>Người dùng</h3>
+              <div class="stat-number" id="total-users">0</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon orange">
+              <span class="material-symbols-outlined">calendar_month</span>
+            </div>
+            <div class="stat-info">
+              <h3>Đặt bàn hôm nay</h3>
+              <div class="stat-number" id="today-bookings">0</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon red">
+              <span class="material-symbols-outlined">payments</span>
+            </div>
+            <div class="stat-info">
+              <h3>Doanh thu tháng</h3>
+              <div class="stat-number" id="monthly-revenue">0đ</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h2>Biểu đồ đặt bàn theo tháng</h2>
+            <div class="chart-placeholder">
+              📊 Biểu đồ đặt bàn (tích hợp Chart.js)
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <h2>Top CLB được đặt nhiều nhất</h2>
+            <ul class="top-clubs" id="top-clubs-list">
+              <li>
+                <div class="club-rank">1</div>
+                <span class="club-name">Đang tải...</span>
+                <span class="club-bookings">0</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="recent-bookings">
+          <h2>Đơn đặt bàn gần đây</h2>
+          <div id="recent-bookings-list">
+            <div class="booking-item">
+              <div class="booking-info">
+                <h4>Đang tải dữ liệu...</h4>
+                <p>Vui lòng đợi</p>
+              </div>
+              <span class="booking-status status-pending">Đang chờ</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <script src="../app.js"></script>
+    <script src="../auth-guard.js"></script>
+    <script src="../tong-quan.js"></script>
+  
+  </body>
+</html>

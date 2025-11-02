@@ -1,0 +1,184 @@
+/* --- Cài đặt chung & Reset --- */
+:root {
+  --mau-chinh: #0052cc; /* Màu xanh dương chính */
+  --mau-nen-sidebar: #1e293b; /* Màu xanh than */
+  --mau-chu-sidebar: #cbd5e1;
+  --mau-nen-chinh: #f8fafc; /* Màu nền xám nhạt */
+  --mau-nen-card: #ffffff; /* Màu trắng */
+  --mau-chu-tieu-de: #0b1119;
+  --mau-vien: #e2e8f0;
+  --mau-nen-active: #0052cc; /* Màu nền khi active */
+  --mau-chu-active: #ffffff;
+}
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--mau-chu-tieu-de);
+}
+
+/* --- Trang Đăng nhập --- */
+.login-page {
+  background-color: var(--mau-nen-chinh);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-container {
+  background-color: var(--mau-nen-card);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid var(--mau-vien);
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--mau-vien);
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--mau-chinh);
+  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.2);
+}
+
+.btn {
+  display: inline-block;
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--mau-chinh);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0041a3;
+}
+
+/* --- Layout Dashboard (Sidebar + Content) --- */
+.dashboard-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  width: 260px;
+  background-color: var(--mau-nen-sidebar);
+  color: var(--mau-chu-sidebar);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 2rem;
+  padding-left: 0.5rem;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-nav li a {
+  display: flex;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  text-decoration: none;
+  color: var(--mau-chu-sidebar);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-nav li a .icon {
+  margin-right: 1rem;
+  font-size: 1.5rem; /* Làm icon to hơn */
+}
+
+.sidebar-nav li a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Lớp .active được thêm vào thẻ <li> */
+.sidebar-nav li.active a {
+  background-color: var(--mau-nen-active);
+  color: var(--mau-chu-active);
+  font-weight: 600;
+}
+
+/* --- Main Content --- */
+.main-content {
+  flex-grow: 1; /* Chiếm phần còn lại */
+  background-color: var(--mau-nen-chinh);
+  padding: 2.5rem;
+  overflow-y: auto; /* Cho phép cuộn khi nội dung dài */
+}
+
+.main-content h1 {
+  margin-top: 0;
+  font-size: 2rem;
+}
