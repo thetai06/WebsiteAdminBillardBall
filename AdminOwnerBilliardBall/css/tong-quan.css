@@ -303,3 +303,180 @@
           grid-template-columns: 1fr;
         }
       }
+
+/* Card doanh thu mở rộng */
+.stat-card.revenue-card {
+  grid-column: span 2;
+  position: relative;
+  overflow: visible;
+}
+
+.stat-subtitle {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin-top: 4px;
+}
+
+/* Revenue Filter Wrapper - ĐÃ SỬA LỖI KHOẢNG TRỐNG */
+.revenue-filter-wrapper {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  width: 100%;
+  padding-top: 10px; 
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px); 
+  transition: all 0.2s ease-out;
+  pointer-events: none; 
+}
+
+/* KHI HOVER VÀO THẺ DOANH THU (HOẶC) BỘ LỌC ĐANG HIỆN */
+.stat-card.revenue-card:hover .revenue-filter-wrapper,
+.revenue-filter-wrapper:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0); 
+  pointer-events: auto; 
+}
+
+/* Revenue Filter Container */
+.revenue-filter {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 16px;
+  border: 1px solid #ecf0f1;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  background: #f8f9fa;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.filter-tab {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-tab:hover {
+  color: #2c3e50;
+  background: rgba(52, 152, 219, 0.1);
+}
+
+.filter-tab.active {
+  background: #3498db;
+  color: white;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+}
+
+/* Filter Controls */
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-nav-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #dfe6e9;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.filter-nav-btn:hover {
+  background: #3498db;
+  border-color: #3498db;
+  color: white;
+  transform: scale(1.05);
+}
+
+.filter-nav-btn .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.filter-display {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  font-size: 15px;
+  color: #2c3e50;
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  min-width: 180px;
+}
+
+.filter-today-btn {
+  padding: 8px 16px;
+  border: 1px solid #3498db;
+  background: white;
+  color: #3498db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filter-today-btn:hover {
+  background: #3498db;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .stat-card.revenue-card {
+    grid-column: span 1;
+  }
+  
+  .revenue-filter-wrapper {
+    position: static;
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-tabs {
+    flex-direction: column;
+  }
+  
+  .filter-controls {
+    flex-wrap: wrap;
+  }
+  
+  .filter-display {
+    width: 100%;
+    order: -1;
+    margin-bottom: 8px;
+  }
+  
+  .filter-today-btn {
+    width: 100%;
+  }
+}

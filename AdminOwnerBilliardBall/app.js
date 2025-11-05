@@ -1,6 +1,6 @@
 const firebaseConfig = {
   apiKey: "AIzaSyBVAFiJCyDxUO3A2n7Zek2hH62VSO8_650",
-  authDomain: "ten-du-an-cua-ban.firebaseapp.com",
+  authDomain: "DATN-2025",
   databaseURL: "https://datn-2025-10496-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "datn-2025-10496",
   storageBucket: "datn-2025-10496.appspot.com",

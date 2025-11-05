@@ -1,9 +1,16 @@
+// Biến toàn cục
 let currentOwnerId = null;
 let bookingChart = null;
 
+// Biến trạng thái cho bộ lọc (Filter State)
+let filterMode = 'month'; // 'day', 'week', 'month', 'year'
+let currentDate = new Date(); // Ngày tham chiếu cho bộ lọc
 
+/* =========================================
+ KHỞI ĐỘNG TRANG
+========================================= 
+*/
 
-// Load Dashboard Data
 document.addEventListener('DOMContentLoaded', function() {
   // Các hàm load sẽ được gọi sau khi auth xác nhận
 });
@@ -17,42 +24,50 @@ function startPageLogic(user) {
         currentOwnerId = user.uid;
         document.getElementById('admin-email').textContent = user.email || 'Chủ CLB';
         
+        // --- KÍCH HOẠT BỘ LỌC SAU KHI ĐĂNG NHẬP ---
+        addFilterEventListeners();
+        updateFilterDisplay(); 
+        // ----------------------------------
+        
         // GỌI CÁC HÀM TẢI DỮ LIỆU CHÍNH
-        loadDashboardStats();
+        loadDashboardStats(); // Hàm này sẽ tự động gọi loadMonthlyRevenue()
         loadRecentBookings();
         loadTopClubs();
         loadBookingChart();
     }
 }
+
+/* =========================================
+ CÁC HÀM TẢI DỮ LIỆU (loadMonthlyRevenue đã được sửa)
+========================================= 
+*/
+
 /**
  * Tải thống kê tổng quan
  */
 function loadDashboardStats() {
   if (!currentOwnerId) return;
 
-  // Tải tổng số CLB của owner
   db.ref('dataStore')
     .orderByChild('ownerId')
     .equalTo(currentOwnerId)
     .once('value', (snapshot) => {
       const count = snapshot.exists() ? snapshot.numChildren() : 0;
       document.getElementById('total-clubs').textContent = count;
-    });
+    })
+    .catch(handleFirebaseError);
 
-  // Tải tổng số người dùng (manager + user) thuộc owner
   db.ref('dataUser')
     .orderByChild('ownerId')
     .equalTo(currentOwnerId)
     .once('value', (snapshot) => {
       const count = snapshot.exists() ? snapshot.numChildren() : 0;
       document.getElementById('total-users').textContent = count;
-    });
+    })
+    .catch(handleFirebaseError);
 
-  // Tải số đơn đặt bàn hôm nay
   loadTodayBookings();
-
-  // Tải doanh thu tháng
-  loadMonthlyRevenue();
+  loadMonthlyRevenue(); // Tải doanh thu theo bộ lọc
 }
 
 /**
@@ -60,7 +75,6 @@ function loadDashboardStats() {
  */
 function loadTodayBookings() {
   if (!currentOwnerId) return;
-
   const today = new Date();
   const todayStr = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
 
@@ -69,49 +83,53 @@ function loadTodayBookings() {
     .equalTo(currentOwnerId)
     .once('value', (snapshot) => {
       let todayCount = 0;
-      
       if (snapshot.exists()) {
         snapshot.forEach((child) => {
           const booking = child.val();
-          if (booking.dateTime === todayStr) {
+          if (booking.dateTime && booking.dateTime === todayStr) {
             todayCount++;
           }
         });
       }
       document.getElementById('today-bookings').textContent = todayCount;
-    });
+    })
+    .catch(handleFirebaseError);
 }
 
 /**
- * Tính doanh thu tháng hiện tại
+ * === HÀM ĐÃ THAY THẾ ===
+ * Tính doanh thu dựa trên bộ lọc (filterMode và currentDate)
  */
 function loadMonthlyRevenue() {
-  if (!currentOwnerId) return;
+  if (!currentOwnerId) {
+    console.warn("loadMonthlyRevenue được gọi nhưng currentOwnerId is null.");
+    return; 
+  }
 
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const currentYear = now.getFullYear();
+  const { startDate, endDate } = getDisplayRange(filterMode, currentDate);
+  updateFilterDisplay(); // Cập nhật UI (tab, text)
 
   db.ref('dataBookTable')
     .orderByChild('storeOwnerId')
     .equalTo(currentOwnerId)
     .once('value', (snapshot) => {
       let totalRevenue = 0;
+      let bookingCount = 0;
       
       if (snapshot.exists()) {
         snapshot.forEach((child) => {
           const booking = child.val();
           
-          // Chỉ tính đơn đã thanh toán
           if (booking.paymentStatus === 'Đã thanh toán' || booking.status === 'Đã hoàn thành' || booking.status === 'Đã hoàn thanh(owner)') {
             if (booking.dateTime) {
               const parts = booking.dateTime.split('/'); // DD/MM/YYYY
               if (parts.length === 3) {
-                const bookingMonth = parseInt(parts[1], 10);
-                const bookingYear = parseInt(parts[2], 10);
+                const bookingDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                bookingDate.setHours(0, 0, 0, 0);
                 
-                if (bookingMonth === currentMonth && bookingYear === currentYear) {
+                if (bookingDate >= startDate && bookingDate <= endDate) {
                   totalRevenue += booking.money || 0;
+                  bookingCount++;
                 }
               }
             }
@@ -121,7 +139,9 @@ function loadMonthlyRevenue() {
       
       document.getElementById('monthly-revenue').textContent = 
         new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalRevenue);
-    });
+      document.getElementById('revenue-booking-count').textContent = `${bookingCount} đơn`;
+    })
+    .catch(handleFirebaseError);
 }
 
 /**
@@ -143,29 +163,20 @@ function loadRecentBookings() {
         snapshot.forEach((child) => {
           bookings.push({ id: child.key, ...child.val() });
         });
-
-        // Đảo ngược để hiển thị mới nhất trước
         bookings.reverse().forEach((booking) => {
           let statusClass = 'status-pending';
           let statusText = 'Đang chờ';
-          
-          // Ưu tiên hiển thị status đơn
           if (booking.status) {
             if (booking.status === 'Đã hoàn thành' || booking.status === 'Đã hoàn thanh(owner)') {
-              statusClass = 'status-completed';
-              statusText = 'Hoàn thành';
+              statusClass = 'status-completed'; statusText = 'Hoàn thành';
             } else if (booking.status === 'Đã huỷ') {
-              statusClass = 'status-cancelled';
-              statusText = 'Đã hủy';
+              statusClass = 'status-cancelled'; statusText = 'Đã hủy';
             } else if (booking.status === 'Đang chờ') {
-              statusClass = 'status-pending';
-              statusText = 'Đang chờ';
+              statusClass = 'status-pending'; statusText = 'Đang chờ';
             }
           } else if (booking.paymentStatus === 'Đã thanh toán') {
-            statusClass = 'status-confirmed';
-            statusText = 'Đã xác nhận';
+            statusClass = 'status-confirmed'; statusText = 'Đã xác nhận';
           }
-
           bookingsList.innerHTML += `
             <div class="booking-item">
               <div class="booking-info">
@@ -177,44 +188,34 @@ function loadRecentBookings() {
           `;
         });
       } else {
-        bookingsList.innerHTML = `
-          <div class="booking-item">
-            <div class="booking-info">
-              <h4>Chưa có đơn đặt bàn nào</h4>
-            </div>
-          </div>
-        `;
+        bookingsList.innerHTML = `<div class="booking-item"><div class="booking-info"><h4>Chưa có đơn đặt bàn nào</h4></div></div>`;
       }
-    });
+    })
+    .catch(handleFirebaseError);
 }
 
 /**
- * Tải Top CLB được đặt nhiều nhất
+ * Tải Top CLB
  */
 function loadTopClubs() {
   if (!currentOwnerId) return;
 
-  // Lấy danh sách CLB
   db.ref('dataStore')
     .orderByChild('ownerId')
     .equalTo(currentOwnerId)
     .once('value', (storeSnapshot) => {
       const clubsList = document.getElementById('top-clubs-list');
       clubsList.innerHTML = '';
-
       if (!storeSnapshot.exists()) {
         clubsList.innerHTML = '<li><span class="club-name">Chưa có CLB nào</span></li>';
         return;
       }
 
-      // Đếm số đơn cho mỗi CLB
       db.ref('dataBookTable')
         .orderByChild('storeOwnerId')
         .equalTo(currentOwnerId)
         .once('value', (bookingSnapshot) => {
           const bookingCounts = {};
-
-          // Đếm số đơn
           if (bookingSnapshot.exists()) {
             bookingSnapshot.forEach((child) => {
               const booking = child.val();
@@ -224,8 +225,6 @@ function loadTopClubs() {
               }
             });
           }
-
-          // Tạo mảng CLB với số đơn
           const clubsArray = [];
           storeSnapshot.forEach((child) => {
             const club = child.val();
@@ -235,18 +234,12 @@ function loadTopClubs() {
               bookings: bookingCounts[child.key] || 0
             });
           });
-
-          // Sắp xếp theo số đơn giảm dần
           clubsArray.sort((a, b) => b.bookings - a.bookings);
-
-          // Hiển thị top 5
           const top5 = clubsArray.slice(0, 5);
-          
           if (top5.length === 0) {
             clubsList.innerHTML = '<li><span class="club-name">Chưa có CLB nào</span></li>';
             return;
           }
-
           top5.forEach((club, index) => {
             clubsList.innerHTML += `
               <li>
@@ -256,12 +249,14 @@ function loadTopClubs() {
               </li>
             `;
           });
-        });
-    });
+        })
+        .catch(handleFirebaseError);
+    })
+    .catch(handleFirebaseError);
 }
 
 /**
- * Tải biểu đồ đặt bàn theo tháng
+ * Tải biểu đồ
  */
 function loadBookingChart() {
   if (!currentOwnerId) return;
@@ -270,21 +265,17 @@ function loadBookingChart() {
     .orderByChild('storeOwnerId')
     .equalTo(currentOwnerId)
     .once('value', (snapshot) => {
-      // Khởi tạo dữ liệu cho 12 tháng
       const monthlyData = new Array(12).fill(0);
       const currentYear = new Date().getFullYear();
 
       if (snapshot.exists()) {
         snapshot.forEach((child) => {
           const booking = child.val();
-          
           if (booking.dateTime) {
             const parts = booking.dateTime.split('/'); // DD/MM/YYYY
             if (parts.length === 3) {
               const bookingMonth = parseInt(parts[1], 10) - 1; // 0-11
               const bookingYear = parseInt(parts[2], 10);
-              
-              // Chỉ tính năm hiện tại
               if (bookingYear === currentYear && bookingMonth >= 0 && bookingMonth < 12) {
                 monthlyData[bookingMonth]++;
               }
@@ -292,9 +283,9 @@ function loadBookingChart() {
           }
         });
       }
-
       renderBookingChart(monthlyData);
-    });
+    })
+    .catch(handleFirebaseError);
 }
 
 /**
@@ -302,17 +293,10 @@ function loadBookingChart() {
  */
 function renderBookingChart(data) {
   const ctx = document.getElementById('bookingChart');
-  
-  if (!ctx) {
-    console.error('Không tìm thấy canvas bookingChart');
-    return;
-  }
-
-  // Hủy chart cũ nếu có
+  if (!ctx) return;
   if (bookingChart) {
     bookingChart.destroy();
   }
-
   bookingChart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -333,53 +317,188 @@ function renderBookingChart(data) {
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top',
-          labels: {
-            font: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: {
+                size: 13
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: {
+              size: 14
+            },
+            bodyFont: {
               size: 13
             }
           }
         },
-        tooltip: {
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          padding: 12,
-          titleFont: {
-            size: 14
-          },
-          bodyFont: {
-            size: 13
-          }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            stepSize: 1,
-            font: {
-              size: 12
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1,
+              font: {
+                size: 12
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
             }
           },
-          grid: {
-            color: 'rgba(0, 0, 0, 0.05)'
-          }
-        },
-        x: {
-          ticks: {
-            font: {
-              size: 12
+          x: {
+            ticks: {
+              font: {
+                size: 12
+              }
+            },
+            grid: {
+              display: false
             }
-          },
-          grid: {
-            display: false
           }
         }
-      }
     }
   });
+}
+
+/* =========================================
+ CÁC HÀM XỬ LÝ BỘ LỌC DOANH THU (MÃ MỚI)
+========================================= 
+*/
+
+/**
+ * Gán sự kiện click cho các nút của bộ lọc
+ */
+function addFilterEventListeners() {
+  try {
+    document.getElementById('filter-day').addEventListener('click', () => setFilterMode('day'));
+    document.getElementById('filter-week').addEventListener('click', () => setFilterMode('week'));
+    document.getElementById('filter-month').addEventListener('click', () => setFilterMode('month'));
+    document.getElementById('filter-year').addEventListener('click', () => setFilterMode('year'));
+
+    document.getElementById('filter-prev').addEventListener('click', () => navigateFilter(-1));
+    document.getElementById('filter-next').addEventListener('click', () => navigateFilter(1));
+    document.getElementById('filter-today').addEventListener('click', () => navigateToToday());
+  } catch (e) {
+    console.error("Lỗi khi gán sự kiện cho bộ lọc:", e);
+  }
+}
+
+/**
+ * (Logic) Đổi chế độ lọc
+ */
+function setFilterMode(mode) {
+  filterMode = mode;
+  currentDate = new Date(); // Reset về ngày hôm nay
+  loadMonthlyRevenue(); // Tải lại doanh thu
+}
+
+/**
+ * (Logic) Xử lý nút "Trước" và "Sau"
+ */
+function navigateFilter(direction) { // -1 (trước) hoặc 1 (sau)
+  if (filterMode === 'day') {
+    currentDate.setDate(currentDate.getDate() + direction);
+  } else if (filterMode === 'week') {
+    currentDate.setDate(currentDate.getDate() + (7 * direction));
+  } else if (filterMode === 'month') {
+    currentDate.setMonth(currentDate.getMonth() + direction);
+  } else if (filterMode === 'year') {
+    currentDate.setFullYear(currentDate.getFullYear() + direction);
+  }
+  loadMonthlyRevenue(); // Tải lại doanh thu
+}
+
+/**
+ * (Logic) Xử lý nút "Hôm nay"
+ */
+function navigateToToday() {
+  currentDate = new Date();
+  loadMonthlyRevenue(); // Tải lại doanh thu
+}
+
+/**
+ * (Hiển thị) Cập nhật văn bản
+ */
+function updateFilterDisplay() {
+  const { displayString } = getDisplayRange(filterMode, currentDate);
+  const displayElement = document.getElementById('filter-display-value');
+  if (displayElement) {
+    displayElement.textContent = displayString;
+  }
+  
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  
+  const activeTab = document.getElementById(`filter-${filterMode}`);
+  if (activeTab) {
+    activeTab.classList.add('active');
+  }
+}
+
+/**
+ * (Hỗ trợ) Lấy Ngày bắt đầu, Ngày kết thúc, và Chuỗi hiển thị
+ */
+function getDisplayRange(mode, date) {
+  const year = date.getFullYear();
+  const month = date.getMonth(); // 0-11
+  const day = date.getDate();
+  const dayOfWeek = date.getDay(); // 0=CN, 1=T2, ... 6=T7
+
+  let startDate = new Date(year, month, day);
+  let endDate = new Date(year, month, day);
+  let displayString = '';
+
+  switch (mode) {
+    case 'day':
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(23, 59, 59, 999);
+      displayString = `${day.toString().padStart(2, '0')}/${(month + 1).toString().padStart(2, '0')}/${year}`;
+      break;
+
+    case 'week':
+      const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Tuần bắt đầu từ T2
+      startDate.setDate(day + diff);
+      startDate.setHours(0, 0, 0, 0);
+      
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6); // Tuần kết thúc vào CN
+      endDate.setHours(23, 59, 59, 999);
+
+      const startDay = startDate.getDate().toString().padStart(2, '0');
+      const startMonth = (startDate.getMonth() + 1).toString().padStart(2, '0');
+      const endDay = endDate.getDate().toString().padStart(2, '0');
+      const endMonth = (endDate.getMonth() + 1).toString().padStart(2, '0');
+      displayString = `Tuần (${startDay}/${startMonth} - ${endDay}/${endMonth})`;
+      break;
+
+    case 'month':
+      startDate = new Date(year, month, 1, 0, 0, 0, 0);
+      endDate = new Date(year, month + 1, 0, 23, 59, 59, 999); // Ngày cuối tháng
+      displayString = `Tháng ${month + 1}, ${year}`;
+      break;
+
+    case 'year':
+      startDate = new Date(year, 0, 1, 0, 0, 0, 0);
+      endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+      displayString = `Năm ${year}`;
+      break;
+  }
+  
+  return { startDate, endDate, displayString };
+}
+
+/**
+ * (Hỗ trợ) Xử lý lỗi Firebase
+ */
+function handleFirebaseError(error) {
+  console.error("Lỗi khi tải dữ liệu từ Firebase:", error);
 }

@@ -86,13 +86,41 @@
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon red">
-              <span class="material-symbols-outlined">payments</span>
+          <!-- CARD DOANH THU VỚI BỘ LỌC -->
+          <div class="stat-card revenue-card">
+            <div style="display: flex; align-items: center; gap: 20px; width: 100%;">
+              <div class="stat-icon red">
+                <span class="material-symbols-outlined">payments</span>
+              </div>
+              <div class="stat-info">
+                <h3>Doanh thu</h3>
+                <div class="stat-number" id="monthly-revenue">0đ</div>
+                <div class="stat-subtitle" id="revenue-booking-count">0 đơn</div>
+              </div>
             </div>
-            <div class="stat-info">
-              <h3>Doanh thu tháng</h3>
-              <div class="stat-number" id="monthly-revenue">0đ</div>
+            
+            <!-- CONTAINER CHO BỘ LỌC - DÒNG NÀY QUAN TRỌNG -->
+            <div id="revenue-filter-container" class="revenue-filter-wrapper">
+  
+            <div class="revenue-filter">
+              <div class="filter-tabs">
+                <button class="filter-tab" id="filter-day">Ngày</button>
+                <button class="filter-tab" id="filter-week">Tuần</button>
+                <button class="filter-tab active" id="filter-month">Tháng</button>
+                <button class="filter-tab" id="filter-year">Năm</button>
+              </div>
+              
+              <div class="filter-controls">
+                <button class="filter-nav-btn" id="filter-prev">
+                  <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <div class="filter-display" id="filter-display-value">Tháng 11, 2025</div>
+                <button class="filter-nav-btn" id="filter-next">
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+                <button class="filter-today-btn" id="filter-today">Hôm nay</button>
+              </div>
+            </div>
             </div>
           </div>
         </div>
@@ -101,9 +129,7 @@
         <div class="charts-grid">
           <div class="chart-card">
             <h2>Biểu đồ đặt bàn theo tháng</h2>
-            <div class="chart-placeholder">
-              📊 Biểu đồ đặt bàn (tích hợp Chart.js)
-            </div>
+            <canvas id="bookingChart" style="max-height: 300px;"></canvas>
           </div>
 
           <div class="chart-card">
@@ -140,8 +166,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     
     <script src="../app.js"></script>
-    <script src="../auth-guard.js"></script>
     <script src="../tong-quan.js"></script>
+    <script src="../auth-guard.js"></script>
   
   </body>
 </html>
