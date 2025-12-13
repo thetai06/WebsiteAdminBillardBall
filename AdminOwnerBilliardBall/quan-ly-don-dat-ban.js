@@ -152,7 +152,7 @@ function updateStats(bookings) {
     document.getElementById('total-bookings').textContent = bookings.length;
     
     document.getElementById('pending-bookings').textContent = bookings.filter(
-        b => b.status === 'Đang chờ' || b.paymentStatus === 'Chưa thanh toán' || b.paymentStatus === 'Thanh toán tại quầy'
+        b => b.status === 'Đang chờ'
     ).length;
     
     // Đếm "Đã thanh toán" (paid)
