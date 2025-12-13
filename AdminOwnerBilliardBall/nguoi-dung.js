@@ -331,19 +331,28 @@ async function saveUser(e) {
          return;
       }
       
-      // Xử lý Cập nhật Mật khẩu (nếu có nhập)
-      if (newPassword && newPassword.length >= 6) {
+      // Xử lý Cập nhật Mật khẩu (CHỈ KHI NGƯỜI DÙNG NHẬP MẬT KHẨU MỚI)
+      if (newPassword && newPassword.trim().length >= 6) {
         const passwordUpdateResponse = await fetch(`${API_BASE_URL}/api/sa/updateUserPassword/${userId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ newPassword: newPassword })
+          body: JSON.stringify({ newPassword: newPassword.trim() })
         });
 
         if (!passwordUpdateResponse.ok) {
           const errorData = await passwordUpdateResponse.json();
           throw new Error(errorData.error || 'Lỗi cập nhật mật khẩu'); 
         }
+        console.log('Đã cập nhật mật khẩu thành công');
+      } else if (newPassword && newPassword.trim().length > 0 && newPassword.trim().length < 6) {
+        // Nếu có nhập nhưng < 6 ký tự
+        errorMessageElement.textContent = 'Mật khẩu phải có ít nhất 6 ký tự.';
+        errorMessageElement.style.background = '#ffebee';
+        errorMessageElement.style.border = '1px solid #d32f2f';
+        errorMessageElement.style.padding = '10px';
+        return;
       }
+      // Nếu không nhập mật khẩu (để trống) thì bỏ qua, không cập nhật
         
       // Cập nhật thông tin (Tên, SĐT, Role, Địa chỉ, CLB)
       userData.password = undefined;
