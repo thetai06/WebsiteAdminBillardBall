@@ -1,4 +1,3 @@
-
 const API_BASE_URL = "https://api-datn-2025.onrender.com"; 
 
 let allUsers = []; 
@@ -52,6 +51,7 @@ async function loadStores(ownerId) {
     console.error("Lỗi tải danh sách cơ sở:", error);
   }
 }
+
 function loadUsers(ownerId) {
   const usersRef = db.ref('dataUser').orderByChild('ownerId').equalTo(ownerId);
   usersRef.on('value', (snapshot) => {
@@ -109,7 +109,8 @@ function displayUsers(users) {
         <td>${user.email || 'N/A'}</td>
         <td>${user.phone || 'N/A'}</td>
         <td><span class="user-role ${roleClass}">${roleText}</span></td>
-        <td>${managedStoreName}</td> <td>${createdDate}</td>
+        <td>${managedStoreName}</td>
+        <td>${createdDate}</td>
         <td class="actions-cell">
           <button class="btn btn-warning" data-action="edit" data-id="${user.id}">Sửa</button>
           <button class="btn btn-danger" data-action="delete" data-id="${user.id}" data-name="${userNameForDelete}">Xóa</button>
@@ -131,6 +132,7 @@ function setupEventListeners() {
     );
     displayUsers(filtered);
   });
+  
   document.getElementById('role-filter').addEventListener('change', (e) => {
     const role = e.target.value;
     const filtered = role ? allUsers.filter(user => user.role === role) : allUsers;
@@ -172,7 +174,7 @@ function setupEventListeners() {
   });
 }
 
-// --- HÀM MỞ MODAL (Cho Thêm mới) ---
+// --- HÀM Mở MODAL (Cho Thêm mới) ---
 function openAddModal() {
   const errorMessageElement = document.getElementById('form-error-message');
   
@@ -202,7 +204,7 @@ function openAddModal() {
 function closeModal() {
   document.getElementById('user-modal').classList.remove('active');
   
-  // *Xóa mọi style khi đóng ***
+  // Xóa mọi style khi đóng
   const errorMessageElement = document.getElementById('form-error-message');
   if (errorMessageElement) {
       errorMessageElement.textContent = '';
@@ -212,7 +214,7 @@ function closeModal() {
   }
 }
 
-// --- HÀM MỞ MODAL (Cho Sửa) ---
+// --- HÀM Mở MODAL (Cho Sửa) ---
 function editUser(userId) {
   const user = allUsers.find(u => u.id === userId);
   if (!user) return;
@@ -223,25 +225,21 @@ function editUser(userId) {
   document.getElementById('user-email').value = user.email || '';
   document.getElementById('user-phone').value = user.phone || '';
   
-  // *** Xử lý role không tồn tại trong dropdown ***
-  // Nếu user có role 'admin' hoặc 'owner', ta phải kiểm tra xem option đó có tồn tại không.
+  // Xử lý role không tồn tại trong dropdown
   const roleValue = user.role;
   let isRoleAvailable = false;
   
-  // Kiểm tra xem option có tồn tại (dùng querySelector để tránh lỗi)
   if(userRoleSelect.querySelector(`option[value="${roleValue}"]`)) {
      userRoleSelect.value = roleValue;
      isRoleAvailable = true;
   } else {
-     // Nếu là admin/owner (cấp cao), ta không thể sửa role này
-     userRoleSelect.value = 'user'; // Mặc định về user nếu không tìm thấy role
+     userRoleSelect.value = 'user';
      isRoleAvailable = false;
      alert(`Lưu ý: Tài khoản này là cấp ${roleValue}. Bạn không thể thay đổi vai trò của họ.`);
   }
 
   document.getElementById('user-address').value = user.address || '';
   
-  // Nếu là manager, hiện và chọn đúng CLB
   if (user.role === 'manager' || (isRoleAvailable && userRoleSelect.value === 'manager')) {
     storeManagerGroup.style.display = 'block';
     userManagedStoreSelect.value = user.storeId || '';
@@ -252,12 +250,12 @@ function editUser(userId) {
 
   userPasswordGroup.style.display = 'block'; 
   userPasswordInput.removeAttribute('required'); 
-  userPasswordInput.value = ''; // Luôn xóa giá trị cũ
+  userPasswordInput.value = '';
 
   document.getElementById('user-modal').classList.add('active');
 }
 
-// --- (Bước 4: Hàm LƯU USER - Gọi API Backend) ---
+// --- HÀM LƯU USER - Gọi API Backend ---
 async function saveUser(e) {
   e.preventDefault();
   
@@ -278,9 +276,12 @@ async function saveUser(e) {
   const userId = document.getElementById('user-id').value;
   const role = userRoleSelect.value;
   
-  // *** CẬP NHẬT: CẤM TẠO/SỬA CẤP CAO ***
+  // CẤM TẠO/SỬA CẤP CAO
   if (role === 'owner' || role === 'admin') {
       errorMessageElement.textContent = 'Bạn không có quyền tạo hoặc gán vai trò cấp cao (Admin/Owner).';
+      errorMessageElement.style.background = '#ffebee';
+      errorMessageElement.style.border = '1px solid #d32f2f';
+      errorMessageElement.style.padding = '10px';
       return;
   }
   
@@ -298,6 +299,9 @@ async function saveUser(e) {
     const storeId = userManagedStoreSelect.value;
     if (!storeId) {
       errorMessageElement.textContent = 'Vui lòng chọn một cơ sở để gán cho Quản lý.';
+      errorMessageElement.style.background = '#ffebee';
+      errorMessageElement.style.border = '1px solid #d32f2f';
+      errorMessageElement.style.padding = '10px';
       return;
     }
     userData.storeId = storeId;
@@ -308,51 +312,61 @@ async function saveUser(e) {
     token = await auth.currentUser.getIdToken();
   } catch (error) {
     errorMessageElement.textContent = "Lỗi xác thực. Vui lòng đăng nhập lại.";
+    errorMessageElement.style.background = '#ffebee';
+    errorMessageElement.style.border = '1px solid #d32f2f';
+    errorMessageElement.style.padding = '10px';
     return;
   }
 
   try {
     let response;
     if (userId) {
-      // Nếu user đang được sửa là Owner/Admin, ta không cho phép sửa role qua API
+      // Nếu user đang được sửa là Owner/Admin, không cho phép sửa role qua API
       const userToEdit = allUsers.find(u => u.id === userId);
       if(userToEdit && (userToEdit.role === 'owner' || userToEdit.role === 'admin') && userToEdit.role !== role) {
          errorMessageElement.textContent = 'Không thể hạ cấp Owner/Admin qua giao diện này.';
+         errorMessageElement.style.background = '#ffebee';
+         errorMessageElement.style.border = '1px solid #d32f2f';
+         errorMessageElement.style.padding = '10px';
          return;
       }
-      // Xử lý Cập nhật Mật khẩu
+      
+      // Xử lý Cập nhật Mật khẩu (nếu có nhập)
       if (newPassword && newPassword.length >= 6) {
-        // cập nhật mật khẩu qua API riêng
-        const passwordUpdateResponse = await fetch(`${API_BASE_URL}/api/updateUserPassword/${userId}`, {
+        const passwordUpdateResponse = await fetch(`${API_BASE_URL}/api/sa/updateUserPassword/${userId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ newPassword: newPassword }) // Gửi mật khẩu mới
+          body: JSON.stringify({ newPassword: newPassword })
         });
 
         if (!passwordUpdateResponse.ok) {
           const errorData = await passwordUpdateResponse.json();
-          throw new Error(`Lỗi cập nhật mật khẩu: ${errorData.message}`); 
+          throw new Error(errorData.error || 'Lỗi cập nhật mật khẩu'); 
         }
       }
         
       // Cập nhật thông tin (Tên, SĐT, Role, Địa chỉ, CLB)
-      userData.password = undefined; // Đảm bảo không gửi password qua API updateUser
+      userData.password = undefined;
       
-      response = await fetch(`${API_BASE_URL}/api/updateUser/${userId}`, {
+      response = await fetch(`${API_BASE_URL}/api/sa/updateUser/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(userData)
       });
       
     } else {
+      // TẠO MỚI
       userData.password = document.getElementById('user-password').value;
       
       if (!userData.password || userData.password.length < 6) {
         errorMessageElement.textContent = 'Mật khẩu phải có ít nhất 6 ký tự.';
+        errorMessageElement.style.background = '#ffebee';
+        errorMessageElement.style.border = '1px solid #d32f2f';
+        errorMessageElement.style.padding = '10px';
         return; 
       }
 
-      response = await fetch(`${API_BASE_URL}/api/createUser`, {
+      response = await fetch(`${API_BASE_URL}/api/sa/create-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(userData)
@@ -362,11 +376,11 @@ async function saveUser(e) {
     
     if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message); 
+        throw new Error(errorData.error || errorData.message); 
     }
     
     const result = await response.json();
-    alert(result.message); 
+    alert(result.message || 'Lưu thành công!'); 
     closeModal();
     
   } catch (error) {
@@ -374,9 +388,9 @@ async function saveUser(e) {
     
     let friendlyMessage = 'Đã xảy ra lỗi không xác định.';
     
-    if (error.message.includes('email address is already in use')) {
+    if (error.message.includes('email address is already in use') || error.message.includes('email-already-exists')) {
         friendlyMessage = 'Email này đã tồn tại. Vui lòng dùng email khác.';
-    } else if (error.message.includes('phone number already exists')) {
+    } else if (error.message.includes('phone number already exists') || error.message.includes('phone-number-already-exists')) {
         friendlyMessage = 'Số điện thoại này đã tồn tại. Vui lòng dùng SĐT khác.';
     } else if (error.message.includes('TOO_SHORT') || error.message.includes('Password should be at least 6 characters')) {
         friendlyMessage = 'Mật khẩu phải có ít nhất 6 ký tự.';
@@ -385,9 +399,9 @@ async function saveUser(e) {
     }
     
     errorMessageElement.textContent = friendlyMessage;
-    errorMessageElement.style.background = '#ffebee'; // Màu hồng
-    errorMessageElement.style.border = '1px solid #d32f2f'; // Viền đỏ
-    errorMessageElement.style.padding = '10px'; // Khoảng cách
+    errorMessageElement.style.background = '#ffebee';
+    errorMessageElement.style.border = '1px solid #d32f2f';
+    errorMessageElement.style.padding = '10px';
   }
 }
 
@@ -404,21 +418,23 @@ async function deleteUser(userId, userName) {
     }
 
     try {
-      // Gọi API "DELETE"
-      const response = await fetch(`${API_BASE_URL}/api/deleteUser/${userId}`, {
-        method: 'DELETE',
+      // Gọi API "DELETE" (nhưng backend dùng POST)
+      const response = await fetch(`${API_BASE_URL}/api/sa/delete-user`, {
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}` 
-        }
+        },
+        body: JSON.stringify({ uid: userId })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message);
+        throw new Error(errorData.error || errorData.message);
       }
 
       const result = await response.json();
-      alert(result.message); 
+      alert(result.message || 'Xóa thành công!'); 
 
     } catch (error) {
       console.error('Lỗi khi xóa user:', error);
@@ -429,7 +445,6 @@ async function deleteUser(userId, userName) {
 
 // --- HÀM XUẤT EXCEL ---
 function exportUsers() {
-  // (Giữ nguyên hàm này)
   if (allUsers.length === 0) {
     alert('Không có dữ liệu để xuất!');
     return;
@@ -465,4 +480,3 @@ function exportUsers() {
                   date.getFullYear();
   XLSX.writeFile(wb, `Danh_sach_nguoi_dung_${dateStr}.xlsx`);
 }
-
