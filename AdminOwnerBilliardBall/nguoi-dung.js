@@ -333,17 +333,29 @@ async function saveUser(e) {
       
       // Xử lý Cập nhật Mật khẩu (CHỈ KHI NGƯỜI DÙNG NHẬP MẬT KHẨU MỚI)
       if (newPassword && newPassword.trim().length >= 6) {
+        console.log('Đang cập nhật mật khẩu cho user:', userId);
+        console.log('Mật khẩu mới có độ dài:', newPassword.trim().length);
+        
         const passwordUpdateResponse = await fetch(`${API_BASE_URL}/api/sa/updateUserPassword/${userId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${token}` 
+          },
           body: JSON.stringify({ newPassword: newPassword.trim() })
         });
 
+        console.log('Response status:', passwordUpdateResponse.status);
+        
         if (!passwordUpdateResponse.ok) {
           const errorData = await passwordUpdateResponse.json();
-          throw new Error(errorData.error || 'Lỗi cập nhật mật khẩu'); 
+          console.error('Lỗi từ server:', errorData);
+          throw new Error(errorData.error || errorData.message || 'Lỗi cập nhật mật khẩu'); 
         }
-        console.log('Đã cập nhật mật khẩu thành công');
+        
+        const pwdResult = await passwordUpdateResponse.json();
+        console.log('Kết quả cập nhật mật khẩu:', pwdResult);
+        
       } else if (newPassword && newPassword.trim().length > 0 && newPassword.trim().length < 6) {
         // Nếu có nhập nhưng < 6 ký tự
         errorMessageElement.textContent = 'Mật khẩu phải có ít nhất 6 ký tự.';
@@ -353,6 +365,7 @@ async function saveUser(e) {
         return;
       }
       // Nếu không nhập mật khẩu (để trống) thì bỏ qua, không cập nhật
+      console.log('Không cập nhật mật khẩu (để trống hoặc không đổi)');
         
       // Cập nhật thông tin (Tên, SĐT, Role, Địa chỉ, CLB)
       userData.password = undefined;
