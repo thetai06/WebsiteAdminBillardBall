@@ -1,7 +1,6 @@
 
 const API_BASE_URL = "https://api-datn-2025.onrender.com"; 
 
-// --- BIẾN TOÀN CỤC ---
 let allUsers = []; 
 const storeMap = new Map(); 
 let loggedInOwnerId = null; 
@@ -14,7 +13,6 @@ const userPasswordInput = document.getElementById('user-password');
 const userRoleSelect = document.getElementById('user-role');
 
 
-// --- LOGIC KHỞI CHẠY CHÍNH ---
 document.addEventListener('DOMContentLoaded', function() {
   auth.onAuthStateChanged(async (user) => {
     if (user) {
@@ -84,10 +82,8 @@ function displayUsers(users) {
     const initials = user.name ? user.name.charAt(0).toUpperCase() : 'U';
     const roleClass = `role-${user.role || 'user'}`;
     
-    // *** CẬP NHẬT: Thêm logic hiển thị cho các role cấp cao (nếu tồn tại) ***
     let roleText = 'Người dùng';
     switch(user.role) {
-      case 'admin': roleText = 'Quản trị viên (Cấp cao)'; break;
       case 'owner': roleText = 'Chủ CLB (Cấp cao)'; break;
       case 'manager': roleText = 'Quản lý'; break;
     }
@@ -149,10 +145,7 @@ function setupEventListeners() {
   // Nút Lưu (Submit form)
   document.getElementById('user-form').addEventListener('submit', saveUser);
 
-  // *** LOGIC QUAN TRỌNG: Khi chọn vai trò "Manager" ***
   userRoleSelect.addEventListener('change', (e) => {
-    // Chỉ hiện dropdown CLB khi chọn Manager. 
-    // KHÔNG HIỆN khi chọn User (hoặc Owner/Admin - cấp cao)
     if (e.target.value === 'manager') {
       storeManagerGroup.style.display = 'block'; 
     } else {
@@ -183,12 +176,11 @@ function setupEventListeners() {
 function openAddModal() {
   const errorMessageElement = document.getElementById('form-error-message');
   
-  // *** FIX LỖI: Xóa mọi style viền/nền và nội dung khi mở Modal ***
   if (errorMessageElement) {
       errorMessageElement.textContent = '';
       errorMessageElement.style.background = 'none';
-      errorMessageElement.style.border = 'none'; // <-- THÊM DÒNG NÀY
-      errorMessageElement.style.padding = '0'; // <-- THÊM DÒNG NÀY
+      errorMessageElement.style.border = 'none'; 
+      errorMessageElement.style.padding = '0'; 
   }
   
   document.getElementById('modal-title').textContent = 'Thêm người dùng mới';
@@ -210,13 +202,13 @@ function openAddModal() {
 function closeModal() {
   document.getElementById('user-modal').classList.remove('active');
   
-  // *** FIX LỖI: Xóa mọi style khi đóng ***
+  // *Xóa mọi style khi đóng ***
   const errorMessageElement = document.getElementById('form-error-message');
   if (errorMessageElement) {
       errorMessageElement.textContent = '';
       errorMessageElement.style.background = 'none';
-      errorMessageElement.style.border = 'none'; // <-- THÊM DÒNG NÀY
-      errorMessageElement.style.padding = '0'; // <-- THÊM DÒNG NÀY
+      errorMessageElement.style.border = 'none'; 
+      errorMessageElement.style.padding = '0'; 
   }
 }
 
@@ -231,7 +223,7 @@ function editUser(userId) {
   document.getElementById('user-email').value = user.email || '';
   document.getElementById('user-phone').value = user.phone || '';
   
-  // *** CẬP NHẬT: Xử lý role không tồn tại trong dropdown ***
+  // *** Xử lý role không tồn tại trong dropdown ***
   // Nếu user có role 'admin' hoặc 'owner', ta phải kiểm tra xem option đó có tồn tại không.
   const roleValue = user.role;
   let isRoleAvailable = false;
@@ -258,9 +250,9 @@ function editUser(userId) {
     userManagedStoreSelect.value = '';
   }
 
-  // Ẩn trường mật khẩu khi Sửa
-  userPasswordGroup.style.display = 'none';
+  userPasswordGroup.style.display = 'block'; 
   userPasswordInput.removeAttribute('required'); 
+  userPasswordInput.value = ''; // Luôn xóa giá trị cũ
 
   document.getElementById('user-modal').classList.add('active');
 }
@@ -300,6 +292,7 @@ async function saveUser(e) {
     address: document.getElementById('user-address').value,
     storeId: null
   };
+  const newPassword = document.getElementById('user-password').value;
 
   if (role === 'manager') {
     const storeId = userManagedStoreSelect.value;
@@ -327,8 +320,23 @@ async function saveUser(e) {
          errorMessageElement.textContent = 'Không thể hạ cấp Owner/Admin qua giao diện này.';
          return;
       }
-      
-      userData.password = undefined; 
+      // Xử lý Cập nhật Mật khẩu
+      if (newPassword && newPassword.length >= 6) {
+        // cập nhật mật khẩu qua API riêng
+        const passwordUpdateResponse = await fetch(`${API_BASE_URL}/api/updateUserPassword/${userId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ newPassword: newPassword }) // Gửi mật khẩu mới
+        });
+
+        if (!passwordUpdateResponse.ok) {
+          const errorData = await passwordUpdateResponse.json();
+          throw new Error(`Lỗi cập nhật mật khẩu: ${errorData.message}`); 
+        }
+      }
+        
+      // Cập nhật thông tin (Tên, SĐT, Role, Địa chỉ, CLB)
+      userData.password = undefined; // Đảm bảo không gửi password qua API updateUser
       
       response = await fetch(`${API_BASE_URL}/api/updateUser/${userId}`, {
         method: 'PUT',
@@ -337,7 +345,6 @@ async function saveUser(e) {
       });
       
     } else {
-      // --- CHẾ ĐỘ TẠO MỚI ---
       userData.password = document.getElementById('user-password').value;
       
       if (!userData.password || userData.password.length < 6) {
@@ -351,6 +358,7 @@ async function saveUser(e) {
         body: JSON.stringify(userData)
       });
     }
+    
     
     if (!response.ok) {
         const errorData = await response.json();
@@ -457,3 +465,4 @@ function exportUsers() {
                   date.getFullYear();
   XLSX.writeFile(wb, `Danh_sach_nguoi_dung_${dateStr}.xlsx`);
 }
+
